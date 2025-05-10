@@ -1,4 +1,5 @@
 <?php
+
 namespace MQ\Responses;
 
 use GuzzleHttp\Exception\TransferException;
@@ -10,9 +11,9 @@ class MQPromise
     private $response;
     private $promise;
 
-    public function __construct(PromiseInterface &$promise, BaseResponse &$response)
+    public function __construct(PromiseInterface &$promise , BaseResponse &$response)
     {
-        $this->promise = $promise;
+        $this->promise  = $promise;
         $this->response = $response;
     }
 
@@ -35,19 +36,18 @@ class MQPromise
     {
         try {
             $res = $this->promise->wait();
-            if ($res instanceof ResponseInterface)
-            {
+            if ( $res instanceof ResponseInterface ) {
                 $this->response->setRequestId($res->getHeaderLine("x-mq-request-id"));
-                return $this->response->parseResponse($res->getStatusCode(), $res->getBody());
+                return $this->response->parseResponse($res->getStatusCode() , $res->getBody());
             }
         } catch (TransferException $e) {
             $message = $e->getMessage();
-            if ($e->hasResponse()) {
+            if ( method_exists($e , 'hasResponse') && $e->hasResponse() ) {
                 $message = $e->getResponse()->getBody();
             }
-            $this->response->parseErrorResponse($e->getCode(), $message);
+            $this->response->parseErrorResponse($e->getCode() , $message);
         }
-        $this->response->parseErrorResponse("500", "Unknown");
+        $this->response->parseErrorResponse("500" , "Unknown");
     }
 }
 
